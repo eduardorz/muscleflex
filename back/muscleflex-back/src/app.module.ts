@@ -1,5 +1,3 @@
-import * as crypto from 'crypto';
-import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -12,6 +10,7 @@ import typeorm from './config/typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { Module } from '@nestjs/common';
 
 @Module({
     imports: [
@@ -21,7 +20,17 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => config.get('typeorm')(),
+      useFactory: async (config: ConfigService) => {
+        try {
+          const dbConfig = config.get('typeorm');
+          // Agrega esto para confirmar que la configuración está siendo cargada correctamente
+          console.log('DB Config:', dbConfig);
+          return dbConfig;
+        } catch (error) {
+          console.error('Error al cargar la configuración de la base de datos:', error);
+          throw error;
+        }
+      },
     }),
     JwtModule.register({
       global: true,
